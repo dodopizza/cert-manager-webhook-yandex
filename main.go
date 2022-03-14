@@ -55,7 +55,7 @@ type yandexDNSProviderConfig struct {
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
 // Issuer resource.
-func (c *yandexDNSProviderSolver) Name() string {
+func (*yandexDNSProviderSolver) Name() string {
 	return ProviderName
 }
 
@@ -64,7 +64,7 @@ func (c *yandexDNSProviderSolver) Name() string {
 // This method should tolerate being called multiple times with the same value.
 // cert-manager itself will later perform a self check to ensure that the
 // solver has correctly configured the DNS provider.
-func (c *yandexDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
+func (*yandexDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (c *yandexDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 // value provided on the ChallengeRequest should be cleaned up.
 // This is in order to facilitate multiple DNS validations for the same domain
 // concurrently.
-func (c *yandexDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
+func (*yandexDNSProviderSolver) CleanUp(*v1alpha1.ChallengeRequest) error {
 	// TODO: add code that deletes a record from the DNS provider's console
 	return nil
 }
@@ -95,7 +95,7 @@ func (c *yandexDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 // client that can be used to fetch resources from the Kubernetes API, e.g.
 // Secret resources containing credentials used to authenticate with DNS
 // provider accounts.
-func (c *yandexDNSProviderSolver) Initialize(config *rest.Config, stop <-chan struct{}) error {
+func (c *yandexDNSProviderSolver) Initialize(config *rest.Config, _ <-chan struct{}) error {
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return err
