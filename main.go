@@ -124,15 +124,16 @@ func (s *yandexDNSProviderSolver) Initialize(config *rest.Config, _ <-chan struc
 	return nil
 }
 
-// provider is a helper function that creates provider from config
+// Helper function
 //
-// returns YandexProvider or error if any error occurred
+// provider returns yandex.Provider configured from yandexDNSProviderConfig
+// or environment variables if config not specified.
 func (s *yandexDNSProviderSolver) provider(
 	cfg *yandexDNSProviderConfig,
 	ch *v1alpha1.ChallengeRequest,
 ) (*yandex.DNSProvider, error) {
 	if cfg == nil {
-		return yandex.NewProvider(
+		return yandex.NewDNSProvider(
 			yandex.NewProviderConfigFromEnv(),
 		)
 	}
@@ -163,11 +164,12 @@ func (s *yandexDNSProviderSolver) provider(
 		providerCfg.DNSRecordSetTTL = cfg.DNSRecordSetTTL
 	}
 
-	return yandex.NewProvider(providerCfg)
+	return yandex.NewDNSProvider(providerCfg)
 }
 
-// loadConfig is a small helper function that decodes JSON configuration into
-// the typed config struct.
+// Helper method
+//
+// loadConfig decodes JSON configuration into the typed config struct.
 func loadConfig(cfgJSON *apiext.JSON) (*yandexDNSProviderConfig, error) {
 	// handle case when empty config specified
 	if cfgJSON == nil {

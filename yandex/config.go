@@ -44,6 +44,7 @@ const (
 	DefaultAuthorizationType = AuthorizationTypeInstanceServiceAccount
 )
 
+// DNSProviderConfig is used to configure the creation of the DNSProvider.
 type DNSProviderConfig struct {
 	AuthorizationType       string
 	AuthorizationOAuthToken string
@@ -52,6 +53,7 @@ type DNSProviderConfig struct {
 	DNSRecordSetTTL         int
 }
 
+// NewProviderConfig returns a new instance of DNSProviderConfig with specified AuthorizationType and FolderId.
 func NewProviderConfig(authorizationType, folderId string) *DNSProviderConfig {
 	return &DNSProviderConfig{
 		AuthorizationType: authorizationType,
@@ -60,6 +62,7 @@ func NewProviderConfig(authorizationType, folderId string) *DNSProviderConfig {
 	}
 }
 
+// NewProviderConfigFromEnv returns a new instance of DNSProviderConfig configured from environment variables.
 func NewProviderConfigFromEnv() *DNSProviderConfig {
 	return &DNSProviderConfig{
 		AuthorizationType:       internal.GetEnvOrDefaultString(EnvironmentAuthorizationType, DefaultAuthorizationType),
@@ -70,6 +73,7 @@ func NewProviderConfigFromEnv() *DNSProviderConfig {
 	}
 }
 
+// SetSecret sets corresponding secret for DNSProvider depending on AuthorizationType.
 func (cfg *DNSProviderConfig) SetSecret(secret string) {
 	switch cfg.AuthorizationType {
 	case AuthorizationTypeOAuthToken:
@@ -79,9 +83,8 @@ func (cfg *DNSProviderConfig) SetSecret(secret string) {
 	}
 }
 
-// Validate is a method for checking invariants of DNSProviderConfig
-//
-// Returns error if any required field is missing, otherwise nil
+// Validate checks invariants of DNSProviderConfig
+// if any required field is missing or incorrect will return error, otherwise nil.
 func (cfg *DNSProviderConfig) Validate() error {
 	if cfg.FolderId == "" {
 		return errors.New("required field \"FolderId\" is missing")

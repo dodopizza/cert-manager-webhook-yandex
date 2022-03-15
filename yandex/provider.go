@@ -9,12 +9,14 @@ import (
 	"github.com/yandex-cloud/go-sdk/gen/dns"
 )
 
+// DNSProvider is an implementation of the solver interface.
 type DNSProvider struct {
 	client *dns.DnsZoneServiceClient
 	config *DNSProviderConfig
 }
 
-func NewProvider(cfg *DNSProviderConfig) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured with specified *DNSProviderConfig.
+func NewDNSProvider(cfg *DNSProviderConfig) (*DNSProvider, error) {
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
@@ -38,24 +40,29 @@ func NewProvider(cfg *DNSProviderConfig) (*DNSProvider, error) {
 	return provider, nil
 }
 
+// Present creates a TXT record to fulfill DNS-01 challenge.
 func (p *DNSProvider) Present(zone, fqdn, key string) error {
 	zoneState, err := p.zone(zone)
 	if err != nil {
 		return err
 	}
 
-	return p.addRecord(zoneState.Id, fqdn, key)
+	return p.addChallengeRecord(zoneState.Id, fqdn, key)
 }
 
+// CleanUp removes a TXT record used for DNS-01 challenge.
 func (p *DNSProvider) CleanUp(zone, fqdn, key string) error {
 	zoneState, err := p.zone(zone)
 	if err != nil {
 		return err
 	}
 
-	return p.removeRecord(zoneState.Id, fqdn, key)
+	return p.removeChallengeRecord(zoneState.Id, fqdn, key)
 }
 
+// Helper function
+//
+// zone method that searches domain zones by specified zone field.
 func (p *DNSProvider) zone(zone string) (*dnsProto.DnsZone, error) {
 	iterator := p.client.DnsZoneIterator(
 		context.Background(),
@@ -79,7 +86,10 @@ func (p *DNSProvider) zone(zone string) (*dnsProto.DnsZone, error) {
 	return nil, fmt.Errorf("zone %s not exists in folder %s", zone, p.config.FolderId)
 }
 
-func (p *DNSProvider) addRecord(zoneId, fqdn, key string) error {
+// Helper function
+//
+// addChallengeRecord is a method that adds txt recordset representing challenge.
+func (p *DNSProvider) addChallengeRecord(zoneId, fqdn, key string) error {
 	_, err := p.client.UpsertRecordSets(
 		context.Background(),
 		&dnsProto.UpsertRecordSetsRequest{
@@ -97,7 +107,10 @@ func (p *DNSProvider) addRecord(zoneId, fqdn, key string) error {
 	return err
 }
 
-func (p *DNSProvider) removeRecord(zoneId, fqdn, key string) error {
+// Helper function
+//
+// removeChallengeRecord is a method that removes txt recordset representing challenge.
+func (p *DNSProvider) removeChallengeRecord(zoneId, fqdn, key string) error {
 	_, err := p.client.UpsertRecordSets(
 		context.Background(),
 		&dnsProto.UpsertRecordSetsRequest{
