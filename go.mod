@@ -4,6 +4,8 @@ go 1.17
 
 require (
 	github.com/jetstack/cert-manager v1.7.1
+	github.com/magiconair/properties v1.8.5
+	github.com/yandex-cloud/go-genproto v0.0.0-20220307143823-ae6fd1037836
 	github.com/yandex-cloud/go-sdk v0.0.0-20220307144046-5eb2045b0e5f
 	k8s.io/api v0.23.4
 	k8s.io/apiextensions-apiserver v0.23.1
@@ -59,7 +61,6 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/spf13/cobra v1.2.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/yandex-cloud/go-genproto v0.0.0-20220307143823-ae6fd1037836 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.0 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0 // indirect
 	go.etcd.io/etcd/client/v3 v3.5.0 // indirect

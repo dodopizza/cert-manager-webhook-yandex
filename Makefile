@@ -26,6 +26,11 @@ lint:
 .PHONY: prepare
 prepare: tidy lint
 
+PHONY: test-unit
+test-unit:
+	go test -v ./yandex
+
+.PHONY: test-integration
 test-integration: _test/kubebuilder
 	TEST_ASSET_ETCD=_test/kubebuilder/bin/etcd \
 	TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/bin/kube-apiserver \
@@ -38,9 +43,8 @@ _test/kubebuilder:
 	tar -C _test/kubebuilder --strip-components=1 -zvxf envtest-bins.tar.gz
 	rm envtest-bins.tar.gz
 
-clean: clean-kubebuilder
-
-clean-kubebuilder:
+.PHONY: clean
+clean:
 	rm -Rf _test/kubebuilder
 
 .PHONY: help
@@ -54,5 +58,6 @@ help:
 	@echo "  ${YELLOW}tidy                      ${RESET} Run tidy for go module to remove unused dependencies"
 	@echo "  ${YELLOW}lint                      ${RESET} Run linters via golangci-lint"
 	@echo "  ${YELLOW}prepare                   ${RESET} Run all available checks and generators"
+	@echo "  ${YELLOW}test-unit                 ${RESET} Run available unit tests"
 	@echo "  ${YELLOW}test-integration          ${RESET} Run integration test located at main_test.go"
-	@echo "  ${YELLOW}cleanup                   ${RESET} Cleanup all temporary artifacts"
+	@echo "  ${YELLOW}clean                     ${RESET} Cleanup all temporary artifacts"
