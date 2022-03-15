@@ -39,6 +39,9 @@ const (
 const (
 	// DefaultDNSRecordSetTTL is the default TTL for record sets
 	DefaultDNSRecordSetTTL = 60
+
+	// DefaultAuthorizationType is the default authorization type for dns api
+	DefaultAuthorizationType = AuthorizationTypeInstanceServiceAccount
 )
 
 type DNSProviderConfig struct {
@@ -59,7 +62,7 @@ func NewProviderConfig(authorizationType, folderId string) *DNSProviderConfig {
 
 func NewProviderConfigFromEnv() *DNSProviderConfig {
 	return &DNSProviderConfig{
-		AuthorizationType:       internal.GetEnvOrDefaultString(EnvironmentAuthorizationType, AuthorizationTypeInstanceServiceAccount),
+		AuthorizationType:       internal.GetEnvOrDefaultString(EnvironmentAuthorizationType, DefaultAuthorizationType),
 		AuthorizationOAuthToken: os.Getenv(EnvironmentAuthorizationOAuthToken),
 		AuthorizationKey:        os.Getenv(EnvironmentAuthorizationKey),
 		FolderId:                os.Getenv(EnvironmentFolderId),
@@ -102,6 +105,10 @@ func (cfg *DNSProviderConfig) Validate() error {
 	if cfg.AuthorizationType == AuthorizationTypeKey && cfg.AuthorizationKey == "" {
 		return fmt.Errorf("required field \"AuthorizationTypeKey\" is missing for authorization type: %s",
 			cfg.AuthorizationType)
+	}
+
+	if cfg.DNSRecordSetTTL < DefaultDNSRecordSetTTL {
+		return fmt.Errorf("field \"DNSRecordSetTTL\" must be greater or equal to %d", DefaultDNSRecordSetTTL)
 	}
 
 	return nil
