@@ -48,7 +48,7 @@ type yandexDNSProviderSolver struct {
 	client *kubernetes.Clientset
 }
 
-// customDNSProviderConfig is a structure that is used to decode into when
+// yandexDNSProviderConfig is a structure that is used to decode into when
 // solving a DNS01 challenge.
 // This information is provided by cert-manager, and may be a reference to
 // additional configuration that's needed to solve the challenge for this
@@ -122,9 +122,10 @@ func (s *yandexDNSProviderSolver) Initialize(config *rest.Config, _ <-chan struc
 	return nil
 }
 
+// todo: move all validation logic to yandex.DNSProviderConfig
 // validate is a helper function that validates provider config
-func (c *yandexDNSProviderConfig) validate() error {
-	if c.APIKeySecretRef.LocalObjectReference.Name == "" {
+func (cfg *yandexDNSProviderConfig) validate() error {
+	if cfg.APIKeySecretRef.LocalObjectReference.Name == "" {
 		return errors.New("API token field were not provided")
 	}
 
@@ -134,32 +135,31 @@ func (c *yandexDNSProviderConfig) validate() error {
 // provider is a helper function that creates provider from config
 //
 // returns YandexProvider or error if any error occurred
-func (s *yandexDNSProviderSolver) provider(c *yandexDNSProviderConfig, namespace string) (*yandex.DNSProvider, error) {
-	if err := c.validate(); err != nil {
+func (s *yandexDNSProviderSolver) provider(cfg *yandexDNSProviderConfig, namespace string) (*yandex.DNSProvider, error) {
+	if err := cfg.validate(); err != nil {
 		return nil, err
 	}
 
 	secret, err := s.client.CoreV1().
 		Secrets(namespace).
-		Get(context.Background(), c.APIKeySecretRef.LocalObjectReference.Name, meta.GetOptions{})
+		Get(context.Background(), cfg.APIKeySecretRef.LocalObjectReference.Name, meta.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	// todo: use secret state as provider api-key or authorized key
-	_, ok := secret.Data[c.APIKeySecretRef.Key]
+	_, ok := secret.Data[cfg.APIKeySecretRef.Key]
 	if !ok {
 		return nil, fmt.Errorf("key %q not found in secret \"%s/%s\"",
-			c.APIKeySecretRef.Key,
-			c.APIKeySecretRef.LocalObjectReference.Name,
+			cfg.APIKeySecretRef.Key,
+			cfg.APIKeySecretRef.LocalObjectReference.Name,
 			namespace)
 	}
 
-	provider := yandex.NewProvider(
+	// todo: resolve config from environment or submitted fields from cfg
+	return yandex.NewProvider(
 		&yandex.DNSProviderConfig{},
 	)
-
-	return provider, nil
 }
 
 // loadConfig is a small helper function that decodes JSON configuration into
