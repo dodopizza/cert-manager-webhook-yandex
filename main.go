@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -57,7 +56,10 @@ type yandexDNSProviderSolver struct {
 // provider credentials, in cases where a 'multi-tenant' DNS solver is being
 // created.
 type yandexDNSProviderConfig struct {
-	APIKeySecretRef core.SecretKeySelector `json:"apiKeySecretRef"`
+	APIKeySecretRef   core.SecretKeySelector `json:"apiKeySecretRef"`
+	AuthorizationType string                 `json:"authorizationType"`
+	FolderId          string                 `json:"folderId"`
+	DNSRecordSetTTL   int                    `json:"dnsRecordSetTTL"`
 }
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
@@ -77,7 +79,7 @@ func (s *yandexDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	provider, err := s.provider(&cfg, ch.ResourceNamespace)
+	provider, err := s.provider(cfg, ch)
 	if err != nil {
 		return err
 	}
@@ -97,7 +99,7 @@ func (s *yandexDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	provider, err := s.provider(&cfg, ch.ResourceNamespace)
+	provider, err := s.provider(cfg, ch)
 	if err != nil {
 		return err
 	}
@@ -122,54 +124,57 @@ func (s *yandexDNSProviderSolver) Initialize(config *rest.Config, _ <-chan struc
 	return nil
 }
 
-// todo: move all validation logic to yandex.DNSProviderConfig
-// validate is a helper function that validates provider config
-func (cfg *yandexDNSProviderConfig) validate() error {
-	if cfg.APIKeySecretRef.LocalObjectReference.Name == "" {
-		return errors.New("API token field were not provided")
-	}
-
-	return nil
-}
-
 // provider is a helper function that creates provider from config
 //
 // returns YandexProvider or error if any error occurred
-func (s *yandexDNSProviderSolver) provider(cfg *yandexDNSProviderConfig, namespace string) (*yandex.DNSProvider, error) {
-	if err := cfg.validate(); err != nil {
-		return nil, err
+func (s *yandexDNSProviderSolver) provider(
+	cfg *yandexDNSProviderConfig,
+	ch *v1alpha1.ChallengeRequest,
+) (*yandex.DNSProvider, error) {
+	if cfg == nil {
+		return yandex.NewProvider(
+			yandex.NewProviderConfigFromEnv(),
+		)
+	}
+
+	if cfg.APIKeySecretRef.LocalObjectReference.Name == "" {
+		return nil, fmt.Errorf("provider secret token or key were not provided")
 	}
 
 	secret, err := s.client.CoreV1().
-		Secrets(namespace).
+		Secrets(ch.ResourceNamespace).
 		Get(context.Background(), cfg.APIKeySecretRef.LocalObjectReference.Name, meta.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// todo: use secret state as provider api-key or authorized key
-	_, ok := secret.Data[cfg.APIKeySecretRef.Key]
+	secretData, ok := secret.Data[cfg.APIKeySecretRef.Key]
 	if !ok {
 		return nil, fmt.Errorf("key %q not found in secret \"%s/%s\"",
 			cfg.APIKeySecretRef.Key,
 			cfg.APIKeySecretRef.LocalObjectReference.Name,
-			namespace)
+			ch.ResourceNamespace)
 	}
 
-	// todo: resolve config from environment or submitted fields from cfg
-	return yandex.NewProvider(
-		&yandex.DNSProviderConfig{},
-	)
+	providerCfg := yandex.NewProviderConfig(cfg.AuthorizationType, cfg.FolderId)
+	providerCfg.SetSecret(string(secretData))
+
+	if cfg.DNSRecordSetTTL != 0 {
+		providerCfg.DNSRecordSetTTL = cfg.DNSRecordSetTTL
+	}
+
+	return yandex.NewProvider(providerCfg)
 }
 
 // loadConfig is a small helper function that decodes JSON configuration into
 // the typed config struct.
-func loadConfig(cfgJSON *apiext.JSON) (yandexDNSProviderConfig, error) {
-	cfg := yandexDNSProviderConfig{}
-
+func loadConfig(cfgJSON *apiext.JSON) (*yandexDNSProviderConfig, error) {
+	// handle case when empty config specified
 	if cfgJSON == nil {
-		return cfg, nil
+		return nil, nil
 	}
+
+	cfg := &yandexDNSProviderConfig{}
 
 	if err := json.Unmarshal(cfgJSON.Raw, &cfg); err != nil {
 		return cfg, fmt.Errorf("error decoding solver config: %v", err)

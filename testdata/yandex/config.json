@@ -1,1 +1,9 @@
-{}
+{
+  "apiKeySecretRef": {
+    "name": "yandex-authorization-api-key",
+    "key": "key"
+  },
+  "authorizationType": "iam-key",
+  "folderId": "somefolderid",
+  "dnsRecordSetTTL": 120
+}
