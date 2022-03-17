@@ -3,6 +3,7 @@ kind: ServiceAccount
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}
   labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+automountServiceAccountToken: true
 ---
 # Role for reading secret api keys for webhook
 apiVersion: rbac.authorization.k8s.io/v1
