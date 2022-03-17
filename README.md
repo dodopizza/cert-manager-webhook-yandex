@@ -34,10 +34,10 @@ An example issuer:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: yandex-authorization-api-key
+  name: yandex-authorized-key
 type: Opaque
 stringData:
-  api-key: autorization-api-key-for-service-account
+  key: authorized-key-for-service-account
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -57,18 +57,18 @@ spec:
           solverName: yandex
           config:
             apiKeySecretRef:
-              name: yandex-authorization-api-key
-              key: api-key
+              name: yandex-authorized-key
+              key: key
 
             folderId: <folder id where dns zone exists>
-            
+
             # one of supported authorization types: iam-token or iam-key
-            # this options depends on supplied secret 
+            # this options depends on supplied secret
             # if oauth token specified, then value must be equal to `iam-token`
-            # if authorization key for service account specified, then value must be equal to `iam-key`
-            authorizationType: iam-token
-            
-            # optional field for dns challenge record ttl 
+            # if authorized key for service account specified, then value must be equal to `iam-key`
+            authorizationType: iam-key
+
+            # optional field for dns challenge record ttl
             dnsRecordSetTTL: 120
 ```
 
