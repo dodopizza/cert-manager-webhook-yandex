@@ -2,22 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
-    matchLabels:
-      app: {{ include "cert-manager-webhook-yandex.name" . }}
-      release: {{ .Release.Name }}
+    matchLabels: {{ include "cert-manager-webhook-yandex.selectors" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        app: {{ include "cert-manager-webhook-yandex.name" . }}
-        release: {{ .Release.Name }}
+      labels: {{ include "cert-manager-webhook-yandex.selectors" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "cert-manager-webhook-yandex.fullname" . }}
       containers:

@@ -31,6 +31,20 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/* Render default labels */}}
+{{- define "cert-manager-webhook-yandex.labels" -}}
+app.kubernetes.io/name: {{ include "cert-manager-webhook-yandex.name" . }}
+helm.sh/chart: {{ include "cert-manager-webhook-yandex.chart" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/* Render selector labels */}}
+{{- define "cert-manager-webhook-yandex.selectors" -}}
+app.kubernetes.io/name: {{ include "cert-manager-webhook-yandex.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
 {{- define "cert-manager-webhook-yandex.selfSignedIssuer" -}}
 {{ printf "%s-selfsign" (include "cert-manager-webhook-yandex.fullname" .) }}
 {{- end -}}

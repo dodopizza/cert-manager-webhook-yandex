@@ -2,11 +2,39 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+---
+# Role for reading secret api keys for webhook
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:secrets-viewer
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+---
+# Grant the webhook permission to read secrets containing authentication credentials for cloud api
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:secrets-viewer
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:secrets-viewer
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+    namespace: {{ .Release.Namespace }}
 ---
 # Grant the webhook permission to read the ConfigMap containing the Kubernetes
 # apiserver's requestheader-ca-certificate.
@@ -16,11 +44,7 @@ kind: RoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}:webhook-authentication-reader
   namespace: kube-system
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -37,11 +61,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}:auth-delegator
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -57,11 +77,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}:domain-solver
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - {{ .Values.groupName }}
@@ -74,11 +90,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "cert-manager-webhook-yandex.fullname" . }}:domain-solver
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

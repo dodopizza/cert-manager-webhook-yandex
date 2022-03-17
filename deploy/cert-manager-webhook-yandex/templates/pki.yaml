@@ -6,11 +6,7 @@ kind: Issuer
 metadata:
   name: {{ include "cert-manager-webhook-yandex.selfSignedIssuer" . }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 spec:
   selfSigned: {}
 
@@ -22,11 +18,7 @@ kind: Certificate
 metadata:
   name: {{ include "cert-manager-webhook-yandex.rootCACertificate" . }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 spec:
   secretName: {{ include "cert-manager-webhook-yandex.rootCACertificate" . }}
   duration: 43800h # 5y
@@ -43,11 +35,7 @@ kind: Issuer
 metadata:
   name: {{ include "cert-manager-webhook-yandex.rootCAIssuer" . }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 spec:
   ca:
     secretName: {{ include "cert-manager-webhook-yandex.rootCACertificate" . }}
@@ -60,11 +48,7 @@ kind: Certificate
 metadata:
   name: {{ include "cert-manager-webhook-yandex.servingCertificate" . }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    app: {{ include "cert-manager-webhook-yandex.name" . }}
-    chart: {{ include "cert-manager-webhook-yandex.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
 spec:
   secretName: {{ include "cert-manager-webhook-yandex.servingCertificate" . }}
   duration: 8760h # 1y
