@@ -2,6 +2,21 @@ apiVersion: v1
 entries:
   cert-manager-webhook-yandex:
   - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2022-04-12T10:43:24.843131662Z"
+    description: Yandex DNS cert-manager ACME webhook
+    digest: 1d640dd17e0f4c6d4ecc6ecb839ab2e315656a7eca5196b838374c9fc50c500e
+    maintainers:
+    - email: artemtrofimushkin@gmail.com
+      name: ArtemTrofimushkin
+      url: https://github.com/ArtemTrofimushkin
+    name: cert-manager-webhook-yandex
+    sources:
+    - https://github.com/dodopizza/cert-manager-webhook-yandex
+    urls:
+    - https://github.com/dodopizza/cert-manager-webhook-yandex/releases/download/cert-manager-webhook-yandex-1.1.1/cert-manager-webhook-yandex-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2022-03-17T19:06:05.868970066Z"
     description: Yandex DNS cert-manager ACME webhook
