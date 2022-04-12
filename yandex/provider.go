@@ -74,7 +74,7 @@ func (p *DNSProvider) zone(zone string) (*dnsProto.DnsZone, error) {
 	for iterator.Next() {
 		value := iterator.Value()
 
-		if value.Zone == zone {
+		if value.Zone == zone && value.PublicVisibility != nil {
 			return value, nil
 		}
 	}
