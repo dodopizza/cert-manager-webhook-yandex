@@ -101,3 +101,34 @@ subjects:
     kind: ServiceAccount
     name: {{ .Values.certManager.serviceAccountName }}
     namespace: {{ .Values.certManager.namespace }}
+---
+# apiserver gets the flowcontrol role to follow API Priority and Fairness
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:flowcontrol
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - "flowcontrol.apiserver.k8s.io"
+    resources:
+      - 'prioritylevelconfigurations'
+      - 'flowschemas'
+    verbs:
+      - 'list'
+      - 'watch'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:flowcontrol
+  labels: {{ include "cert-manager-webhook-yandex.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cert-manager-webhook-yandex.fullname" . }}:flowcontrol
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "cert-manager-webhook-yandex.fullname" . }}
+    namespace: {{ .Release.Namespace }}
